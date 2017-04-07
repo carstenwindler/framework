@@ -3069,17 +3069,24 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 		unset($this->$offset);
 	}
 
-	/**
-	 * Determine if an attribute exists on the model.
-	 *
-	 * @param  string  $key
-	 * @return bool
-	 */
-	public function __isset($key)
-	{
-		return ((isset($this->attributes[$key]) || isset($this->relations[$key])) ||
-				($this->hasGetMutator($key) && ! is_null($this->getAttributeValue($key))));
-	}
+    /**
+     * Determine if an attribute exists on the model.
+     *
+     * @param  string  $key
+     * @return bool
+     */
+    public function __isset($key)
+    {
+        if (isset($this->attributes[$key]) || isset($this->relations[$key])) {
+            return true;
+        }
+
+        if (method_exists($this, $key) && $this->$key && isset($this->relations[$key])) {
+            return true;
+        }
+
+        return $this->hasGetMutator($key) && ! is_null($this->getAttributeValue($key));
+    }
 
 	/**
 	 * Unset an attribute on the model.
